@@ -248,6 +248,63 @@ function drawFooter(width, height) {
 }
 
 /**
+ * 日本語の縦書きにおける文字ごとの調整（オフセット、回転）を取得
+ * @param {string} char - 対象の文字
+ * @param {number} fontSize - フォントサイズ
+ * @returns {Object} 調整情報（offsetX, offsetY, scale, rotateAngle）
+ */
+function getCharAdjustment(char, fontSize) {
+    // 長音記号（独立調整可能）
+    const longVowelMark = ['ー'];
+    
+    // 括弧類（90度回転）
+    const brackets = [
+        '「', '」', '『', '』',              // かぎ括弧
+        '（', '）',                          // 全角括弧
+        '【', '】',                          // 角括弧
+        '《', '》'                           // 山括弧
+    ];
+    
+    // その他の回転記号（ダッシュ、波線）
+    const rotateOtherChars = [
+        '―', '～', '＿', '_', '—',          // ダッシュ・波線
+        '…', '‥'                            // リーダー
+    ];
+    
+    // 句読点・区切り文字（右上にオフセット）
+    const punctuation = [
+        '、', '。',       // 基本句読点
+        '：', '；',                          // コロン、セミコロン
+        '×', '÷', '±',                      // 演算記号
+        '§', '¶'                             // その他記号
+    ];
+
+    const adjustment = {
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        rotateAngle: 0
+    };
+
+    if (longVowelMark.includes(char)) {
+        // 長音記号は90度回転（別で調整可能）
+        adjustment.rotateAngle = Math.PI / 2;
+    } else if (brackets.includes(char)) {
+        // 括弧は90度回転
+        adjustment.rotateAngle = Math.PI / 2;
+    } else if (rotateOtherChars.includes(char)) {
+        // その他の回転記号も90度回転
+        adjustment.rotateAngle = Math.PI / 2;
+    } else if (punctuation.includes(char)) {
+        // 句読点は右上にオフセット
+        adjustment.offsetX = fontSize * 0.25;
+        adjustment.offsetY = -fontSize * 0.1;
+    }
+
+    return adjustment;
+}
+
+/**
  * キャンバスに短歌を描画するメイン関数
  */
 function drawTanka() {
@@ -296,10 +353,41 @@ function drawTanka() {
         // 1文字ずつ縦に描画
         for (let i = 0; i < line.length; i++) {
             const char = line[i];
+            const adjustment = getCharAdjustment(char, fontSize);
 
-            // 句読点や小さい「つ」などの位置微調整が必要な場合はここで判定可能
-            // 今回はシンプルに等間隔で配置
-            ctx.fillText(char, x, startY + (i * fontSize * charSpacingRatio));
+            // キャンバスの状態を保存
+            ctx.save();
+
+            // 文字基準点を中央に設定
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 基本の描画位置
+            const baseY = startY + (i * fontSize * charSpacingRatio);
+            const drawX = x + adjustment.offsetX;
+            const drawY = baseY + adjustment.offsetY;
+
+            // フォントの設定
+            ctx.font = `${fontSize}px ${fontSelect.value}`;
+            ctx.fillStyle = textColor.value;
+
+            // スケーリングと回転を適用
+            if (adjustment.scale !== 1 || adjustment.rotateAngle !== 0) {
+                ctx.translate(drawX, drawY);
+                if (adjustment.rotateAngle !== 0) {
+                    ctx.rotate(adjustment.rotateAngle);
+                }
+                if (adjustment.scale !== 1) {
+                    ctx.scale(adjustment.scale, adjustment.scale);
+                }
+                ctx.translate(-drawX, -drawY);
+            }
+
+            // 文字を描画
+            ctx.fillText(char, drawX, drawY);
+
+            // キャンバスの状態を復元
+            ctx.restore();
         }
     });
 }
