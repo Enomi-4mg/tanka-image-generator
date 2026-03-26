@@ -10,6 +10,13 @@ Tanka Image Generator renders your tanka on an HTML canvas and exports it as a P
 - Live preview while you type
 - Font selection (Google Fonts)
 - Text color and background color customization
+- Separate settings tabs:
+  - Tanka settings
+  - Author settings
+- Footer metadata support:
+  - Author name
+  - SNS accounts (X / Instagram / Threads)
+  - Label visibility toggles (show/hide each label)
 - Preset layout modes:
   - Multiline preset
   - Single-line preset
@@ -30,7 +37,9 @@ No npm install or additional setup is required.
 ## Usage Notes
 - Enter one phrase per line for stable vertical composition.
 - Canvas preview updates immediately on input changes.
-- In the current implementation, the detail inputs are synchronized with presets, and the text is rendered centered.
+- Footer text is drawn at the bottom and wraps automatically when long.
+- In the current implementation, detail values are synchronized with presets, and the main tanka text is rendered centered.
+- Top/right margin inputs are visible in detail mode, but current rendering still uses centered placement.
 
 ## Project Structure
 - `index.html` - UI layout
@@ -54,4 +63,5 @@ Works on modern Chromium/Firefox/Safari versions that support:
 - User-defined output filename
 - Additional poetry templates
 - Better punctuation and small-kana positioning for vertical typography
+- Apply top/right margin inputs directly to rendering position
 
