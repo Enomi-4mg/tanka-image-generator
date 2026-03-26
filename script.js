@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next"
+
 const canvas = document.getElementById('tankaCanvas');
 const ctx = canvas.getContext('2d');
 
