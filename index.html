@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>短歌画像ジェネレーター</title>
+        <link rel="stylesheet" href="style.css">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Sawarabi+Mincho&family=Shippori+Mincho&display=swap"
+            rel="stylesheet">
+    </head>
+    <body>
+
+        <h1>短歌画像ジェネレーター</h1>
+
+        <div class="container">
+            <aside class="controls">
+                <div class="field">
+                    <label for="tankaInput">短歌を入力 (改行で調整)</label>
+                    <textarea id="tankaInput"
+                        placeholder="五七五七七を入力">ひさかたの&#13;光のどけき&#13;春の日に&#13;しづ心なく&#13;花の散るらむ</textarea>
+                </div>
+
+                <div class="field">
+                    <label>文字レイアウト</label>
+                    <div class="tab-menu" role="tablist"
+                        aria-label="文字レイアウト設定モード">
+                        <button type="button" class="tab-button is-active"
+                            role="tab" aria-selected="true"
+                            data-layout-mode="preset"
+                            id="presetTabBtn">プリセット</button>
+                        <button type="button" class="tab-button" role="tab"
+                            aria-selected="false" data-layout-mode="detail"
+                            id="detailTabBtn">詳細設定</button>
+                    </div>
+
+                    <div class="layout-panel" id="presetPanel">
+                        <div class="size-options">
+                            <label class="radio-label">
+                                <input type="radio" name="layoutPreset"
+                                    value="multiline" checked>
+                                複数行向け
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="layoutPreset"
+                                    value="singleline">
+                                一行向け
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="layout-panel is-hidden" id="detailPanel">
+                        <div class="detail-grid">
+                            <label for="fontSizeInput">文字サイズ(px)</label>
+                            <input type="number" id="fontSizeInput" min="12"
+                                max="120" value="42">
+
+                            <label for="lineSpacingInput">列間(px)</label>
+                            <input type="number" id="lineSpacingInput" min="20"
+                                max="240" value="70">
+
+                            <label for="topMarginInput">上余白(px)</label>
+                            <input type="number" id="topMarginInput" min="0"
+                                max="400" value="80">
+
+                            <label for="rightMarginInput">右余白(px)</label>
+                            <input type="number" id="rightMarginInput" min="0"
+                                max="500" value="100">
+
+                            <label for="charSpacingInput">文字間隔(倍率)</label>
+                            <input type="number" id="charSpacingInput" min="0.8"
+                                max="2" step="0.05" value="1.1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="fontSelect">フォント</label>
+                    <select id="fontSelect">
+                        <option value="'Noto Serif JP', serif">Noto Serif JP
+                            (標準)</option>
+                        <option value="'Sawarabi Mincho', serif">さわらび明朝
+                            (繊細)</option>
+                        <option value="'Shippori Mincho', serif">しっぽり明朝
+                            (古典)</option>
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <div class="field">
+                        <label for="textColor">文字色</label>
+                        <input type="color" id="textColor" value="#333333">
+                    </div>
+                    <div class="field">
+                        <label for="bgColor">背景色</label>
+                        <input type="color" id="bgColor" value="#ffffff">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>画像サイズ</label>
+                    <div class="size-options">
+                        <label class="radio-label">
+                            <input type="radio" name="imageSize" value="800x800"
+                                checked>
+                            正方形（800×800）
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="imageSize"
+                                value="960x1280">
+                            960（横）×1280（縦）
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn-download" id="downloadBtn">画像を保存する</button>
+            </aside>
+
+            <main class="preview-area">
+                <canvas id="tankaCanvas" width="800" height="800"></canvas>
+                <p class="hint" id="sizeHint">※800×800px の正方形で出力されます</p>
+            </main>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>
