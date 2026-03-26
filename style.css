@@ -38,6 +38,14 @@ h1 {
     height: fit-content;
 }
 
+.settings-tab-menu {
+    margin-bottom: 20px;
+}
+
+.settings-panel.is-hidden {
+    display: none;
+}
+
 .field {
     margin-bottom: 20px;
 }
@@ -57,6 +65,7 @@ label {
 
 textarea,
 select,
+input[type="text"],
 input[type="color"] {
     width: 100%;
     padding: 10px;
@@ -135,6 +144,28 @@ textarea {
 }
 
 .radio-label input[type="radio"] {
+    width: auto;
+    margin: 0;
+}
+
+.sns-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.sns-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0;
+    font-weight: normal;
+    color: #333;
+    font-size: 0.95em;
+    cursor: pointer;
+}
+
+.sns-item input[type="checkbox"] {
     width: auto;
     margin: 0;
 }

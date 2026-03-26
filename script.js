@@ -7,6 +7,9 @@ const textColor = document.getElementById('textColor');
 const bgColor = document.getElementById('bgColor');
 const downloadBtn = document.getElementById('downloadBtn');
 const sizeHint = document.getElementById('sizeHint');
+const settingsTabButtons = document.querySelectorAll('.tab-button[data-settings-tab]');
+const tankaSettingsPanel = document.getElementById('tankaSettingsPanel');
+const authorSettingsPanel = document.getElementById('authorSettingsPanel');
 const imageSizeRadios = document.querySelectorAll('input[name="imageSize"]');
 const layoutPresetRadios = document.querySelectorAll('input[name="layoutPreset"]');
 const layoutModeTabs = document.querySelectorAll('.tab-button[data-layout-mode]');
@@ -17,8 +20,24 @@ const lineSpacingInput = document.getElementById('lineSpacingInput');
 const topMarginInput = document.getElementById('topMarginInput');
 const rightMarginInput = document.getElementById('rightMarginInput');
 const charSpacingInput = document.getElementById('charSpacingInput');
+const authorInput = document.getElementById('authorInput');
+const snsCheckboxes = document.querySelectorAll('input[type="checkbox"][data-sns]');
+const snsInputs = document.querySelectorAll('input[type="text"][data-sns-input]');
+const labelToggleCheckboxes = document.querySelectorAll('input[type="checkbox"][data-label-toggle]');
 
 let layoutMode = 'preset';
+let settingsTabMode = 'tanka';
+
+const snsLabels = {
+    x: 'X',
+    instagram: 'Instagram',
+    threads: 'Thread'
+};
+
+function shouldShowLabel(labelKey) {
+    const checkbox = document.querySelector(`input[data-label-toggle="${labelKey}"]`);
+    return checkbox ? checkbox.checked : true;
+}
 
 function getSelectedPreset() {
     return document.querySelector('input[name="layoutPreset"]:checked')?.value || 'multiline';
@@ -138,6 +157,96 @@ function updateCanvasSize(sizeValue) {
     }
 }
 
+function updateSettingsTabUI() {
+    const isTankaTab = settingsTabMode === 'tanka';
+
+    tankaSettingsPanel.classList.toggle('is-hidden', !isTankaTab);
+    authorSettingsPanel.classList.toggle('is-hidden', isTankaTab);
+
+    settingsTabButtons.forEach(button => {
+        const isActive = button.dataset.settingsTab === settingsTabMode;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-selected', String(isActive));
+    });
+}
+
+function getFooterTexts() {
+    const footerParts = [];
+    const author = authorInput.value.trim();
+
+    if (author) {
+        footerParts.push(shouldShowLabel('author') ? `作者: ${author}` : author);
+    }
+
+    snsCheckboxes.forEach((checkbox) => {
+        if (!checkbox.checked) {
+            return;
+        }
+
+        const key = checkbox.dataset.sns;
+        const input = document.querySelector(`input[data-sns-input="${key}"]`);
+        const account = input?.value.trim();
+
+        if (account) {
+            footerParts.push(shouldShowLabel(key) ? `${snsLabels[key]}: ${account}` : account);
+        }
+    });
+
+    return footerParts;
+}
+
+function wrapTextByWidth(text, maxWidth) {
+    const chars = Array.from(text);
+    const lines = [];
+    let current = '';
+
+    chars.forEach((char) => {
+        const candidate = current + char;
+        if (current && ctx.measureText(candidate).width > maxWidth) {
+            lines.push(current);
+            current = char;
+            return;
+        }
+
+        current = candidate;
+    });
+
+    if (current) {
+        lines.push(current);
+    }
+
+    return lines;
+}
+
+function drawFooter(width, height) {
+    const footerParts = getFooterTexts();
+
+    if (footerParts.length === 0) {
+        return 0;
+    }
+
+    const footerText = footerParts.join(' / ');
+    const footerFontSize = Math.max(16, Math.round(Math.min(width, height) * 0.025));
+    const footerPadding = Math.round(Math.min(width, height) * 0.04);
+    const footerLineHeight = Math.round(footerFontSize * 1.45);
+    const maxWidth = width - (footerPadding * 2);
+
+    ctx.font = `${footerFontSize}px ${fontSelect.value}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+
+    const lines = wrapTextByWidth(footerText, maxWidth);
+    const footerHeight = (lines.length * footerLineHeight) + footerPadding;
+    const baseY = height - footerPadding;
+
+    lines.forEach((line, index) => {
+        const y = baseY - ((lines.length - 1 - index) * footerLineHeight);
+        ctx.fillText(line, width / 2, y);
+    });
+
+    return footerHeight;
+}
+
 /**
  * キャンバスに短歌を描画するメイン関数
  */
@@ -162,7 +271,10 @@ function drawTanka() {
     } = getLayoutConfig();
 
     ctx.fillStyle = textColor.value;
+    const reservedFooterHeight = drawFooter(width, height);
+
     ctx.font = `${fontSize}px ${fontSelect.value}`;
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
 
     // 3. 縦書き描画
@@ -174,7 +286,8 @@ function drawTanka() {
     const blockWidth = fontSize + ((lines.length - 1) * lineSpacing);
     const blockHeight = fontSize + ((Math.max(maxCharsInLine - 1, 0)) * fontSize * charSpacingRatio);
     const rightMostX = ((width + blockWidth) / 2) - fontSize;
-    const startY = (height - blockHeight) / 2;
+    const availableHeight = Math.max(height - reservedFooterHeight, fontSize);
+    const startY = Math.max(0, (availableHeight - blockHeight) / 2);
 
     lines.forEach((line, index) => {
         // 右から左へ行を配置
@@ -196,6 +309,18 @@ function drawTanka() {
     el.addEventListener('input', drawTanka);
 });
 
+[authorInput, ...snsInputs].forEach(el => {
+    el.addEventListener('input', drawTanka);
+});
+
+snsCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', drawTanka);
+});
+
+labelToggleCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', drawTanka);
+});
+
 imageSizeRadios.forEach(radio => {
     radio.addEventListener('change', (event) => {
         updateCanvasSize(event.target.value);
@@ -215,6 +340,13 @@ layoutModeTabs.forEach(tab => {
         layoutMode = tab.dataset.layoutMode;
         updateLayoutModeUI();
         drawTanka();
+    });
+});
+
+settingsTabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        settingsTabMode = button.dataset.settingsTab;
+        updateSettingsTabUI();
     });
 });
 
@@ -242,6 +374,7 @@ document.fonts.ready.then(() => {
         updateCanvasSize(selectedSize.value);
     }
     syncDetailInputsFromPreset();
+    updateSettingsTabUI();
     updateLayoutModeUI();
     drawTanka();
 });
