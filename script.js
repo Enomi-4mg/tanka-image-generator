@@ -254,54 +254,55 @@ function drawFooter(width, height) {
  * @returns {Object} 調整情報（offsetX, offsetY, scale, rotateAngle）
  */
 function getCharAdjustment(char, fontSize) {
-    // 長音記号（独立調整可能）
-    const longVowelMark = ['ー'];
-    
-    // 括弧類（90度回転）
-    const brackets = [
-        '「', '」', '『', '』',              // かぎ括弧
-        '（', '）',                          // 全角括弧
-        '【', '】',                          // 角括弧
-        '《', '》'                           // 山括弧
-    ];
-    
-    // その他の回転記号（ダッシュ、波線）
-    const rotateOtherChars = [
-        '―', '～', '＿', '_', '—',          // ダッシュ・波線
-        '…', '‥'                            // リーダー
-    ];
-    
-    // 句読点・区切り文字（右上にオフセット）
-    const punctuation = [
-        '、', '。',       // 基本句読点
-        '：', '；',                          // コロン、セミコロン
-        '×', '÷', '±',                      // 演算記号
-        '§', '¶'                             // その他記号
-    ];
-
-    const adjustment = {
+    const defaultAdjustment = {
         offsetX: 0,
         offsetY: 0,
         scale: 1,
         rotateAngle: 0
     };
 
-    if (longVowelMark.includes(char)) {
-        // 長音記号は90度回転（別で調整可能）
-        adjustment.rotateAngle = Math.PI / 2;
-    } else if (brackets.includes(char)) {
-        // 括弧は90度回転
-        adjustment.rotateAngle = Math.PI / 2;
-    } else if (rotateOtherChars.includes(char)) {
-        // その他の回転記号も90度回転
-        adjustment.rotateAngle = Math.PI / 2;
-    } else if (punctuation.includes(char)) {
-        // 句読点は右上にオフセット
-        adjustment.offsetX = fontSize * 0.25;
-        adjustment.offsetY = -fontSize * 0.1;
+    // 記号ごとに個別調整したい場合はこのマップの値を変更する
+    const perCharAdjustments = {
+        'ー': { rotateAngle: Math.PI / 2 },
+        '―': { rotateAngle: Math.PI / 2 },
+        '—': { rotateAngle: Math.PI / 2 },
+        '～': { rotateAngle: Math.PI / 2 },
+        '＿': { rotateAngle: Math.PI / 2 },
+        '_': { rotateAngle: Math.PI / 2 },
+        '…': { rotateAngle: Math.PI / 2 },
+        '‥': { rotateAngle: Math.PI / 2 },
+
+        // 括弧は同じ回転だが個別に分けてあるため別々に調整可能
+        '「': { rotateAngle: Math.PI / 2 },
+        '」': { rotateAngle: Math.PI / 2 },
+        '『': { rotateAngle: Math.PI / 2 },
+        '』': { rotateAngle: Math.PI / 2 , offsetX: -fontSize * 0.2 },
+        '（': { rotateAngle: Math.PI / 2 },
+        '）': { rotateAngle: Math.PI / 2 },
+        '【': { rotateAngle: Math.PI / 2 },
+        '】': { rotateAngle: Math.PI / 2 },
+        '《': { rotateAngle: Math.PI / 2 },
+        '》': { rotateAngle: Math.PI / 2 }
+    };
+
+    if (perCharAdjustments[char]) {
+        return {
+            ...defaultAdjustment,
+            ...perCharAdjustments[char]
+        };
     }
 
-    return adjustment;
+    // 句読点は共通で右上にオフセット
+    const punctuation = ['、', '。', '：', '；', '×', '÷', '±', '§', '¶'];
+    if (punctuation.includes(char)) {
+        return {
+            ...defaultAdjustment,
+            offsetX: fontSize * 0.25,
+            offsetY: -fontSize * 0.1
+        };
+    }
+
+    return defaultAdjustment;
 }
 
 /**
