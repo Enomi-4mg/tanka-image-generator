@@ -69,10 +69,6 @@
                                 <input type="number" id="topMarginInput" min="0"
                                     max="400" value="80">
 
-                                <label for="rightMarginInput">右余白(px)</label>
-                                <input type="number" id="rightMarginInput" min="0"
-                                    max="500" value="100">
-
                                 <label for="charSpacingInput">文字間隔(倍率)</label>
                                 <input type="number" id="charSpacingInput" min="0.8"
                                     max="2" step="0.05" value="1.1">
@@ -127,16 +123,29 @@
                     </div>
 
                     <div class="field">
+                        <label>描画方式（検証用）</label>
+                        <div class="size-options">
+                            <label class="radio-label">
+                                <input type="radio" name="renderMode" value="svg" checked>
+                                標準（SVG writing-mode）
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="renderMode" value="glyph">
+                                簡易（Canvasグリフ描画・非推奨）
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field">
                         <label>画像サイズ</label>
                         <div class="size-options">
                             <label class="radio-label">
-                                <input type="radio" name="imageSize" value="800x800"
-                                    checked>
+                                <input type="radio" name="imageSize" value="800x800">
                                 正方形（800×800）
                             </label>
                             <label class="radio-label">
                                 <input type="radio" name="imageSize"
-                                    value="960x1280">
+                                    value="960x1280" checked>
                                 960（横）×1280（縦）
                             </label>
                         </div>
@@ -199,11 +208,11 @@
             </aside>
 
             <main class="preview-area">
-                <canvas id="tankaCanvas" width="800" height="800"></canvas>
-                <p class="hint" id="sizeHint">※800×800px の正方形で出力されます</p>
+                <canvas id="tankaCanvas" width="960" height="1280"></canvas>
+                <p class="hint" id="sizeHint">※960×1280px で出力されます</p>
             </main>
         </div>
 
-        <script src="script.js"></script>
+        <script type="module" src="script.js"></script>
     </body>
 </html>
